@@ -345,5 +345,5 @@ def main():
         print(output)
         output.to_csv(output_file_path, index=False)
 
-#실행
+#모든 로직 실행
 main()
