@@ -321,8 +321,8 @@ def container_placement_process(initial_stacks, new_weights, original_weights_ma
 
 #input 데이터를 통해 컨테이너 stacking 후 output 데이터로 저장
 def main():
-    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\Container\\input\\'
-    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\Container\\output\\'
+    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Data\\input\\'
+    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Data\\output\\'
 
     initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
     container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
