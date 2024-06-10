@@ -103,8 +103,36 @@ def calculate_weight_levels(weights):
     return levels
 
 #이상적인 형상의 이상적인 좌표설정
+# def get_ideal_positions(new_weights, stacks):
+#     weight_levels = calculate_weight_levels(new_weights) #무게레벨 계산
+
+#     positions = [
+#         (0,0), (0,1), (1,0), (0,2), (1, 1), (2,0), (0,3), (1,2), (2,1), (3,0),
+#         (0,4), (1,3), (2,2), (3,1), (4,0), (1,4), (2,3), (3,2), (4,1), (5,0),
+#         (2,4), (3,3), (4,2), (5,1), (3,4), (4,3), (5,2), (4,4), (5,3), (5,4)
+#     ]
+
+#     occupied_stacks = {i for i, stack in enumerate(stacks) if any(tier is not None for tier in stack)}
+#     available_positions = [pos for pos in positions if pos[0] not in occupied_stacks]
+
+#     weight_positions = {level: [] for level in set(weight_levels)}
+
+#     pos_index = 0
+#     for level in sorted(set(weight_levels)):
+#         positions_needed = weight_levels.count(level)
+#         for _ in range(positions_needed):
+#             if pos_index < len(available_positions):
+#                 weight_positions[level].append(available_positions[pos_index])
+#                 pos_index += 1
+#             else:
+#                 break
+
+#     weight_to_positions = {weight: weight_positions[level] for weight, level in zip(new_weights, weight_levels)}
+
+#     return weight_to_positions, weight_positions
+
 def get_ideal_positions(new_weights, stacks):
-    weight_levels = calculate_weight_levels(new_weights) #무게레벨 계산
+    weight_levels = calculate_weight_levels(new_weights)
 
     positions = [
         (0,0), (0,1), (1,0), (0,2), (1, 1), (2,0), (0,3), (1,2), (2,1), (3,0),
@@ -127,9 +155,12 @@ def get_ideal_positions(new_weights, stacks):
             else:
                 break
 
-    weight_to_positions = {weight: weight_positions[level] for weight, level in zip(new_weights, weight_levels)}
+    # 각 레벨의 위치 리스트를 x 좌표가 큰 순서대로 정렬(내림차순)
+    # for level in weight_positions:
+    #     weight_positions[level].sort(key=lambda x: -x[0])
 
-    return weight_to_positions, weight_positions
+    return {weight: weight_positions[level] for weight, level in zip(new_weights, weight_levels)}, weight_positions
+
 
 #이상적인 좌표에 스택킹 가능하면 이상적인 좌표에 우선적으로 스택킹
 def place_container(stacks, weight, positions, container_info):
