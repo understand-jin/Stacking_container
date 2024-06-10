@@ -4,8 +4,10 @@ import glob
 import numpy as np
 
 #new_value 생성 : 우선 순위가 높은 컨테이너에 대해서 높은 new-value 값 할당
-def calculate_score(weights, priorities):
-    w_max = 24
+def calculate_score(weights, priorities, initial_state_weights, container_weights):
+    combined_weights = initial_state_weights + container_weights
+    w_max = max(combined_weights)
+    print(f"w_max : {w_max}")
     if isinstance(weights, (list, np.ndarray)):
         scores = []
         for weight, p in zip(weights, priorities):
@@ -42,9 +44,12 @@ def load_and_transform_data(initial_state_path, container_path):
     initial_state_df = pd.read_csv(initial_state_path)
     container_df = pd.read_csv(container_path)
 
+    initial_state_weights = initial_state_df['weight'].tolist()
+    container_weights = container_df['weight'].tolist()
+
     new_weight = container_df['weight'].tolist()
     priority = container_df['priority'].tolist()
-    new_weights = calculate_score(new_weight, priority) #new_value 값으로 list 얻음
+    new_weights = calculate_score(new_weight, priority, initial_state_weights, container_weights) #new_value 값으로 list 얻음
 
     container_info = {}
     for _, row in initial_state_df.iterrows():
@@ -53,7 +58,7 @@ def load_and_transform_data(initial_state_path, container_path):
         loc_x = int(row['loc_x'])
         loc_y = 0
         loc_z = int(row['loc_z'])
-        new_value = calculate_score(weight, row['priority']) #new_value 값
+        new_value = calculate_score(weight, row['priority'], initial_state_weights, container_weights) #new_value 값
 
         container_info[idx] = {
             'idx': idx,
@@ -68,7 +73,7 @@ def load_and_transform_data(initial_state_path, container_path):
     for _, row in container_df.iterrows():
         idx = int(row['idx'])
         weight = row['weight']
-        new_value = calculate_score(weight, row['priority'])
+        new_value = calculate_score(weight, row['priority'], initial_state_weights, container_weights)
         container_info[idx] = {
             'idx': idx,
             'weight': weight,
@@ -103,36 +108,8 @@ def calculate_weight_levels(weights):
     return levels
 
 #이상적인 형상의 이상적인 좌표설정
-# def get_ideal_positions(new_weights, stacks):
-#     weight_levels = calculate_weight_levels(new_weights) #무게레벨 계산
-
-#     positions = [
-#         (0,0), (0,1), (1,0), (0,2), (1, 1), (2,0), (0,3), (1,2), (2,1), (3,0),
-#         (0,4), (1,3), (2,2), (3,1), (4,0), (1,4), (2,3), (3,2), (4,1), (5,0),
-#         (2,4), (3,3), (4,2), (5,1), (3,4), (4,3), (5,2), (4,4), (5,3), (5,4)
-#     ]
-
-#     occupied_stacks = {i for i, stack in enumerate(stacks) if any(tier is not None for tier in stack)}
-#     available_positions = [pos for pos in positions if pos[0] not in occupied_stacks]
-
-#     weight_positions = {level: [] for level in set(weight_levels)}
-
-#     pos_index = 0
-#     for level in sorted(set(weight_levels)):
-#         positions_needed = weight_levels.count(level)
-#         for _ in range(positions_needed):
-#             if pos_index < len(available_positions):
-#                 weight_positions[level].append(available_positions[pos_index])
-#                 pos_index += 1
-#             else:
-#                 break
-
-#     weight_to_positions = {weight: weight_positions[level] for weight, level in zip(new_weights, weight_levels)}
-
-#     return weight_to_positions, weight_positions
-
 def get_ideal_positions(new_weights, stacks):
-    weight_levels = calculate_weight_levels(new_weights)
+    weight_levels = calculate_weight_levels(new_weights) #무게레벨 계산
 
     positions = [
         (0,0), (0,1), (1,0), (0,2), (1, 1), (2,0), (0,3), (1,2), (2,1), (3,0),
@@ -155,12 +132,9 @@ def get_ideal_positions(new_weights, stacks):
             else:
                 break
 
-    # 각 레벨의 위치 리스트를 x 좌표가 큰 순서대로 정렬(내림차순)
-    # for level in weight_positions:
-    #     weight_positions[level].sort(key=lambda x: -x[0])
+    weight_to_positions = {weight: weight_positions[level] for weight, level in zip(new_weights, weight_levels)}
 
-    return {weight: weight_positions[level] for weight, level in zip(new_weights, weight_levels)}, weight_positions
-
+    return weight_to_positions, weight_positions
 
 #이상적인 좌표에 스택킹 가능하면 이상적인 좌표에 우선적으로 스택킹
 def place_container(stacks, weight, positions, container_info):
@@ -352,8 +326,8 @@ def container_placement_process(initial_stacks, new_weights, original_weights_ma
 
 #input 데이터를 통해 컨테이너 stacking 후 output 데이터로 저장
 def main():
-    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Data\\input\\'
-    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Data\\output\\'
+    input_dir = 'C:\\Users\\sotor\\OneDrive\\바탕 화면\\Stacking_container-main\\Data\\input\\'
+    output_dir = 'C:\\Users\\sotor\\OneDrive\\바탕 화면\\Stacking_container-main\\Data\\output\\'
 
     initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
     container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
