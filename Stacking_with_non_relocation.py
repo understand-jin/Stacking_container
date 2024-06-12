@@ -390,5 +390,5 @@ def main():
 
         image_output_path = os.path.join(output_dir, f'Final_Stack_Configuration_{i + 1}.png')
         save_stacks_image(initial_stacks, image_output_path)
-#모든 로직 실행
+#모든 로직 실행 dd
 main()
