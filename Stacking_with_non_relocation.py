@@ -19,7 +19,7 @@ def calculate_score(weights, priorities, initial_state_weights, container_weight
         return scores
     else:
         if priorities != 0:
-            return int(w_max + priorities)
+            return (w_max + priorities)
         else:
             return (weights)
         
