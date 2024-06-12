@@ -2,6 +2,34 @@ import pandas as pd
 import os
 import glob
 import numpy as np
+import matplotlib.pyplot as plt
+
+#스택 최종 상태 시각화 
+def save_stacks_image(stacks, output_path):
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    max_tiers = max(len(stack) for stack in stacks)
+
+    for i, stack in enumerate(stacks):
+        for j, weight in enumerate(stack):
+            if weight is not None:
+                ax.add_patch(plt.Rectangle((i, max_tiers - j - 1), 1, 1, fill=True, edgecolor='black'))
+                ax.text(i + 0.5, max_tiers - j - 0.5, f'{weight:.2f}', ha='center', va='center', color='white')
+
+    ax.set_xlim(0, len(stacks))
+    ax.set_ylim(-0, max_tiers)
+    ax.set_xticks(np.arange(len(stacks)))
+    ax.set_xticklabels([f'Stack {i + 1}' for i in range(len(stacks))])
+    # ax.set_yticks(np.arange(max_tiers) )
+    ax.set_yticklabels([f'Tier {i + 1}' for i in reversed(range(max_tiers))])
+
+    plt.gca().invert_yaxis()
+    plt.grid(which='both', color='grey', linestyle='-', linewidth=0.5)
+    plt.title('Final Stack Configuration')
+    plt.savefig(output_path)
+    plt.close()
+
+
 
 #new_value 생성 : 우선 순위가 높은 컨테이너에 대해서 높은 new-value 값 할당
 def calculate_score(weights, priorities, initial_state_weights, container_weights):
@@ -360,5 +388,7 @@ def main():
         print(output)
         output.to_csv(output_file_path, index=False)
 
+        image_output_path = os.path.join(output_dir, f'Final_Stack_Configuration_{i + 1}.png')
+        save_stacks_image(initial_stacks, image_output_path)
 #모든 로직 실행
 main()
