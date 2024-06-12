@@ -35,7 +35,9 @@ def create_dataframe_from_stacks(container_info):
             'loc_x': info['loc_x'],
             'loc_y': 0,
             'loc_z': info['loc_z'],
-            'size(ft)': 20
+            'size(ft)': 20,
+            'priority' : info['priority'],
+            'seq' : info['seq']
         })
     return pd.DataFrame(data)
 
@@ -58,6 +60,7 @@ def load_and_transform_data(initial_state_path, container_path):
         loc_x = int(row['loc_x'])
         loc_y = 0
         loc_z = int(row['loc_z'])
+        priority = int(row['priority'])
         new_value = calculate_score(weight, row['priority'], initial_state_weights, container_weights) #new_value 값
 
         container_info[idx] = {
@@ -67,13 +70,18 @@ def load_and_transform_data(initial_state_path, container_path):
             'relocations': 0,
             'loc_x': loc_x,
             'loc_y': loc_y,
-            'loc_z': loc_z
+            'loc_z': loc_z,
+            'priority' : priority,
+            'seq' : 0
         }
 
     for _, row in container_df.iterrows():
         idx = int(row['idx'])
         weight = row['weight']
         new_value = calculate_score(weight, row['priority'], initial_state_weights, container_weights)
+        priority = int(row['priority'])
+        seq = int(row['seq'])
+
         container_info[idx] = {
             'idx': idx,
             'weight': weight,
@@ -81,7 +89,9 @@ def load_and_transform_data(initial_state_path, container_path):
             'relocations': 0,
             'loc_x': None,
             'loc_y': None,
-            'loc_z': None
+            'loc_z': None,
+            'priority' : priority,
+            'seq' : seq
         }
 
     stacks = [[None] * 5 for _ in range(6)] # stacks 생성
