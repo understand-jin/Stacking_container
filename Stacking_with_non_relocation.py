@@ -20,7 +20,7 @@ def save_stacks_image(stacks, output_path):
     ax.set_ylim(-0, max_tiers)
     ax.set_xticks(np.arange(len(stacks)))
     ax.set_xticklabels([f'Stack {i + 1}' for i in range(len(stacks))])
-    # ax.set_yticks(np.arange(max_tiers) )
+    ax.set_yticks(np.arange(max_tiers) )
     ax.set_yticklabels([f'Tier {i + 1}' for i in reversed(range(max_tiers))])
 
     plt.gca().invert_yaxis()
@@ -366,6 +366,7 @@ def container_placement_process(initial_stacks, new_weights, original_weights_ma
 def main():
     input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Data\\input\\'
     output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Data\\output\\'
+    visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Data\\visualization\\'
 
     initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
     container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
@@ -388,7 +389,7 @@ def main():
         print(output)
         output.to_csv(output_file_path, index=False)
 
-        image_output_path = os.path.join(output_dir, f'Final_Stack_Configuration_{i + 1}.png')
+        image_output_path = os.path.join(visual_dir, f'Final_Stack_Configuration_{i + 1}.png')
         save_stacks_image(initial_stacks, image_output_path)
 #모든 로직 실행 dd
 main()
