@@ -60,7 +60,7 @@ def load_and_transform_data(initial_state_path, container_path):
         loc_x = int(row['loc_x'])
         loc_y = 0
         loc_z = int(row['loc_z'])
-        priority = int(row['priority'])
+        priority = (row['priority'])
         new_value = calculate_score(weight, row['priority'], initial_state_weights, container_weights) #new_value 값
 
         container_info[idx] = {
@@ -79,7 +79,7 @@ def load_and_transform_data(initial_state_path, container_path):
         idx = int(row['idx'])
         weight = row['weight']
         new_value = calculate_score(weight, row['priority'], initial_state_weights, container_weights)
-        priority = int(row['priority'])
+        priority = (row['priority'])
         seq = int(row['seq'])
 
         container_info[idx] = {
