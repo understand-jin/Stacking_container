@@ -13,8 +13,8 @@ def save_stacks_image(stacks, output_path):
     for i, stack in enumerate(stacks):
         for j, weight in enumerate(stack):
             if weight is not None:
-                ax.add_patch(plt.Rectangle((i, max_tiers - j - 1), 1, 1, fill=True, edgecolor='black'))
-                ax.text(i + 0.5, max_tiers - j - 0.5, f'{weight:.2f}', ha='center', va='center', color='white')
+                ax.add_patch(plt.Rectangle((i, j), 1, 1, fill=True, edgecolor='black'))
+                ax.text(i + 0.5, j + 0.5, f'{weight:.2f}', ha='center', va='center', color='white')
 
     ax.set_xlim(0, len(stacks))
     ax.set_ylim(-0, max_tiers)
@@ -23,7 +23,6 @@ def save_stacks_image(stacks, output_path):
     ax.set_yticks(np.arange(max_tiers) )
     ax.set_yticklabels([f'Tier {i + 1}' for i in reversed(range(max_tiers))])
 
-    plt.gca().invert_yaxis()
     plt.grid(which='both', color='grey', linestyle='-', linewidth=0.5)
     plt.title('Final Stack Configuration')
     plt.savefig(output_path)
