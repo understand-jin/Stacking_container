@@ -21,7 +21,7 @@ def save_stacks_image(stacks, output_path):
     ax.set_xticks(np.arange(len(stacks)))
     ax.set_xticklabels([f'Stack {i + 1}' for i in range(len(stacks))])
     ax.set_yticks(np.arange(max_tiers) )
-    ax.set_yticklabels([f'Tier {i + 1}' for i in reversed(range(max_tiers))])
+    ax.set_yticklabels([f'Tier {i + 1}' for i in (range(max_tiers))])
 
     plt.grid(which='both', color='grey', linestyle='-', linewidth=0.5)
     plt.title('Final Stack Configuration')
@@ -55,16 +55,17 @@ def create_dataframe_from_stacks(container_info):
     data = []
     for info in container_info.values():
         data.append({
-            'idx': info['idx'],
+            'container index': info['idx'],
             'weight': info['weight'],
-            'new_value': info['new_value'],
+            'score': info['new_value'],
             'relocation': info['relocations'],
             'loc_x': info['loc_x'],
             'loc_y': 0,
             'loc_z': info['loc_z'],
             'size(ft)': 20,
             'priority' : info['priority'],
-            'seq' : info['seq']
+            'sequence' : info['seq'],
+            'group' : info['group']
         })
     return pd.DataFrame(data)
 
@@ -87,7 +88,8 @@ def load_and_transform_data(initial_state_path, container_path):
         loc_x = int(row['loc_x'])
         loc_y = 0
         loc_z = int(row['loc_z'])
-        priority = (row['priority'])
+        priority = int(row['priority'])
+        group = int(row['group'])
         new_value = calculate_score(weight, row['priority'], initial_state_weights, container_weights) #new_value 값
 
         container_info[idx] = {
@@ -99,15 +101,17 @@ def load_and_transform_data(initial_state_path, container_path):
             'loc_y': loc_y,
             'loc_z': loc_z,
             'priority' : priority,
-            'seq' : 0
+            'seq' : 0,
+            'group' : group
         }
 
     for _, row in container_df.iterrows():
         idx = int(row['idx'])
         weight = row['weight']
         new_value = calculate_score(weight, row['priority'], initial_state_weights, container_weights)
-        priority = (row['priority'])
+        priority = int(row['priority'])
         seq = int(row['seq'])
+        group = int(row['group'])
 
         container_info[idx] = {
             'idx': idx,
@@ -118,10 +122,11 @@ def load_and_transform_data(initial_state_path, container_path):
             'loc_y': None,
             'loc_z': None,
             'priority' : priority,
-            'seq' : seq
+            'seq' : seq,
+            'group' : group
         }
 
-    stacks = [[None] * 5 for _ in range(6)] # stacks 생성
+    stacks = [[None] * 6 for _ in range(10)] # stacks 생성
 
     for _, row in initial_state_df.iterrows():
         x = int(row['loc_x']) - 1
@@ -144,16 +149,31 @@ def calculate_weight_levels(weights):
     
     return levels
 
+def generate_positions_diagonal_pattern(num_stacks, num_tiers):
+    positions = []
+
+    for start in range(num_tiers):
+        x, y = 0, start
+        while y >= 0 and x < num_stacks:
+            positions.append((x, y))
+            x += 1
+            y -= 1
+
+    for start in range(1, num_stacks):
+        x, y = start, num_tiers - 1
+        while x < num_stacks and y >= 0:
+            positions.append((x, y))
+            x += 1
+            y -= 1
+
+    return positions
+
+
 #이상적인 형상의 이상적인 좌표설정
 def get_ideal_positions(new_weights, stacks):
     weight_levels = calculate_weight_levels(new_weights) #무게레벨 계산
 
-    positions = [
-        (0,0), (0,1), (1,0), (0,2), (1, 1), (2,0), (0,3), (1,2), (2,1), (3,0),
-        (0,4), (1,3), (2,2), (3,1), (4,0), (1,4), (2,3), (3,2), (4,1), (5,0),
-        (2,4), (3,3), (4,2), (5,1), (3,4), (4,3), (5,2), (4,4), (5,3), (5,4)
-    ]
-
+    positions = generate_positions_diagonal_pattern(10, 6)
     occupied_stacks = {i for i, stack in enumerate(stacks) if any(tier is not None for tier in stack)}
     available_positions = [pos for pos in positions if pos[0] not in occupied_stacks]
 
