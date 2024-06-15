@@ -30,25 +30,42 @@ def save_stacks_image(stacks, output_path):
 
 
 
-#new_value 생성 : 우선 순위가 높은 컨테이너에 대해서 높은 new-value 값 할당
-def calculate_score(weights, priorities, initial_state_weights, container_weights):
-    combined_weights = initial_state_weights + container_weights
-    w_max = max(combined_weights)
-    print(f"w_max : {w_max}")
-    if isinstance(weights, (list, np.ndarray)):
+#group 값 할당한 new score
+def calculate_score(weight, group):
+
+    if isinstance(weight, (list, np.ndarray)):
         scores = []
-        for weight, p in zip(weights, priorities):
-            if p != 0:
-                score = w_max + p
+        for w, g in zip(weight, group):
+            if g == 0:
+                score = w
+            elif g == 100:
+                score = w + g
             else:
-                score = weight
-            scores.append((score))
+                score = w + g
+            scores.append(score)
         return scores
     else:
-        if priorities != 0:
-            return (w_max + priorities)
+        if group == 0:
+            return weight
+        elif group == 100:
+            return weight + group
         else:
-            return (weights)
+            return weight + group
+
+#emergency 값 할당
+def final_score(scores, emergency):
+    if isinstance(scores, list):
+        w_max = max(scores)
+        final_scores = []
+        for score in scores:
+            if emergency == 1:
+                final_scores.append(w_max)
+            else:
+                final_scores.append(score)
+        return final_scores
+    else:
+        return w_max if emergency == 1 else scores
+
         
 #output 데이터 프레임 생성
 def create_dataframe_from_stacks(container_info):
@@ -62,8 +79,7 @@ def create_dataframe_from_stacks(container_info):
             'loc_x': info['loc_x'],
             'loc_y': 0,
             'loc_z': info['loc_z'],
-            'size(ft)': 20,
-            'priority' : info['priority'],
+            'size(ft)': info['size'],
             'sequence' : info['seq'],
             'group' : info['group']
         })
@@ -77,9 +93,8 @@ def load_and_transform_data(initial_state_path, container_path):
     initial_state_weights = initial_state_df['weight'].tolist()
     container_weights = container_df['weight'].tolist()
 
-    new_weight = container_df['weight'].tolist()
-    priority = container_df['priority'].tolist()
-    new_weights = calculate_score(new_weight, priority, initial_state_weights, container_weights) #new_value 값으로 list 얻음
+    # new_weight = container_df['weight'].tolist()
+    # new_weights = new_value = final_score(calculate_score(new_weight, group, initial_state_weights, container_weights))
 
     container_info = {}
     for _, row in initial_state_df.iterrows():
@@ -88,9 +103,11 @@ def load_and_transform_data(initial_state_path, container_path):
         loc_x = int(row['loc_x'])
         loc_y = 0
         loc_z = int(row['loc_z'])
-        priority = int(row['priority'])
         group = int(row['group'])
-        new_value = calculate_score(weight, row['priority'], initial_state_weights, container_weights) #new_value 값
+        emergency = int(row['emerg'])
+        size = int(row['size(ft)'])
+        score = calculate_score(weight, group)
+        new_value = final_score(score, emergency)
 
         container_info[idx] = {
             'idx': idx,
@@ -100,18 +117,21 @@ def load_and_transform_data(initial_state_path, container_path):
             'loc_x': loc_x,
             'loc_y': loc_y,
             'loc_z': loc_z,
-            'priority' : priority,
             'seq' : 0,
-            'group' : group
+            'group' : group,
+            'emergency' : emergency,
+            'size' : size
         }
 
     for _, row in container_df.iterrows():
         idx = int(row['idx'])
         weight = row['weight']
-        new_value = calculate_score(weight, row['priority'], initial_state_weights, container_weights)
-        priority = int(row['priority'])
         seq = int(row['seq'])
         group = int(row['group'])
+        emergency = int(row['emerg'])
+        size = int(row['size(ft)'])
+        score = calculate_score(weight, group)
+        new_value = final_score(score, emergency)
 
         container_info[idx] = {
             'idx': idx,
@@ -121,9 +141,10 @@ def load_and_transform_data(initial_state_path, container_path):
             'loc_x': None,
             'loc_y': None,
             'loc_z': None,
-            'priority' : priority,
             'seq' : seq,
-            'group' : group
+            'group' : group,
+            'emergency' : emergency,
+            'size' : size
         }
 
     stacks = [[None] * 6 for _ in range(10)] # stacks 생성
@@ -134,7 +155,9 @@ def load_and_transform_data(initial_state_path, container_path):
         idx = int(row['idx'])
         stacks[x][z] = container_info[idx]['new_value']
 
-    return stacks, new_weights, container_info
+    new_values =[info['new_value'] for info in container_info.values()] 
+
+    return stacks, new_values, container_info
 
 #이상적인 형상을 위한 무게레벨 설정(무게 레벌은 1~9)
 def calculate_weight_levels(weights):
@@ -383,9 +406,9 @@ def container_placement_process(initial_stacks, new_weights, original_weights_ma
 
 #input 데이터를 통해 컨테이너 stacking 후 output 데이터로 저장
 def main():
-    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Data\\input\\'
-    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Data\\output\\'
-    visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Data\\visualization\\'
+    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\CLT_Data\\Input_Data\\Initial_0\\New_50'
+    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\CLT_Data\\Output_Data\\Heuristic_1\\Initial_0\\New_50'
+    visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\CLT_Data\\Output_Data\\Heuristic_1\\Initial_0\\New_50'
 
     initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
     container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
@@ -397,7 +420,7 @@ def main():
     for i in range(len(initial_files)):
         initial_state_path = initial_files[i]
         container_path = container_files[i]
-        output_file_name = f'Non_relocation_ex{i + 1}.csv'
+        output_file_name = f'Configuration_ex{i + 1}.csv'
         output_file_path = os.path.join(output_dir, output_file_name)
 
         initial_stacks, new_weights, container_info = load_and_transform_data(initial_state_path, container_path)
@@ -408,7 +431,7 @@ def main():
         print(output)
         output.to_csv(output_file_path, index=False)
 
-        image_output_path = os.path.join(visual_dir, f'Final_Stack_Configuration_{i + 1}.png')
+        image_output_path = os.path.join(visual_dir, f'Configuration_{i + 1}.png')
         save_stacks_image(initial_stacks, image_output_path)
 #모든 로직 실행 dd
 main()
