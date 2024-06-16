@@ -13,7 +13,7 @@ def save_stacks_image(stacks, output_path):
     for i, stack in enumerate(stacks):
         for j, weight in enumerate(stack):
             if weight is not None:
-                ax.add_patch(plt.Rectangle((i, j), 1, 1, fill=True, edgecolor='black'))
+                ax.add_patch(plt.Rectangle((i, j), 1, 1, fill=True, edgecolor='black', facecolor = 'skyblue'))
                 ax.text(i + 0.5, j + 0.5, f'{weight:.2f}', ha='center', va='center', color='white')
 
     ax.set_xlim(0, len(stacks))
@@ -94,8 +94,12 @@ def load_and_transform_data(initial_state_path, container_path):
     initial_state_weights = initial_state_df['weight'].tolist()
     container_weights = container_df['weight'].tolist()
 
-    # new_weight = container_df['weight'].tolist()
-    # new_weights = new_value = final_score(calculate_score(new_weight, group, initial_state_weights, container_weights))
+    new_weight = container_df['weight'].tolist()
+    group1 = container_df['group'].tolist()
+    score1 = calculate_score(new_weight, group1)
+    emergency1 = container_df['emerg'].tolist()
+    new_weights = final_score(score1, emergency1)
+    
 
     container_info = {}
     for _, row in initial_state_df.iterrows():
@@ -156,9 +160,7 @@ def load_and_transform_data(initial_state_path, container_path):
         idx = int(row['idx'])
         stacks[x][z] = container_info[idx]['new_value']
 
-    new_values =[info['new_value'] for info in container_info.values()] 
-
-    return stacks, new_values, container_info
+    return stacks, new_weights, container_info
 
 #이상적인 형상을 위한 무게레벨 설정(무게 레벌은 1~9)
 def calculate_weight_levels(weights):
@@ -406,9 +408,9 @@ def container_placement_process(initial_stacks, new_weights, original_weights_ma
     return total_relocations
 
 def main():
-    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Input_Data_25\\Initial_5\\New_20'
-    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Output_Data\\Heuristic_1\\Initial_5\\New_20'
-    visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Output_Data\\Heuristic_1\\Initial_5\\New_20'
+    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Input_Data_25\\Initial_15\\New_10'
+    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Output_Data\\Heuristic_1\\Initial_15\\New_10'
+    visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Output_Data\\Heuristic_1\\Initial_15\\New_10'
 
     initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
     container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
