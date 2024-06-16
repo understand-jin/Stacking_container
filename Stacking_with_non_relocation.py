@@ -405,39 +405,6 @@ def container_placement_process(initial_stacks, new_weights, original_weights_ma
 
     return total_relocations
 
-#input 데이터를 통해 컨테이너 stacking 후 output 데이터로 저장
-# def main():
-#     input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\CLT_Data\\Input_Data\\Initial_5\\New_45'
-#     output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\CLT_Data\\Output_Data\\Heuristic_1\\Initial_5\\New_45'
-#     visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\CLT_Data\\Output_Data\\Heuristic_1\\Initial_5\\New_45'
-
-#     initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
-#     container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
-
-#     if len(initial_files) != len(container_files):
-#         print("Error: Mismatched number of initial state and container files.")
-#         return
-
-#     for i in range(len(initial_files)):
-#         initial_state_path = initial_files[i]
-#         container_path = container_files[i]
-#         output_file_name = f'Configuration_ex{i + 1}.csv'
-#         output_file_path = os.path.join(output_dir, output_file_name)
-
-#         print(f"Processing input files: {os.path.basename(initial_state_path)} and {os.path.basename(container_path)}")
-
-#         initial_stacks, new_weights, container_info = load_and_transform_data(initial_state_path, container_path)
-
-#         total_relocations = container_placement_process(initial_stacks, new_weights, {new_weight: weight for new_weight, weight in zip(new_weights, pd.read_csv(container_path)['weight'].tolist())}, container_info)
-#         output = create_dataframe_from_stacks(container_info)
-
-#         print(output)
-#         output.to_csv(output_file_path, index=False)
-
-#         image_output_path = os.path.join(visual_dir, f'Configuration_{i + 1}.png')
-#         save_stacks_image(initial_stacks, image_output_path)
-# #모든 로직 실행 dd
-# main()
 def main():
     input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Input_Data_25\\Initial_5\\New_20'
     output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Output_Data\\Heuristic_1\\Initial_5\\New_20'
@@ -453,7 +420,11 @@ def main():
     for i in range(len(initial_files)):
         initial_state_path = initial_files[i]
         container_path = container_files[i]
-        output_file_name = f'Configuration_ex{i + 1}.csv'
+        
+        # Extract the example number from the initial state file name
+        example_num = os.path.basename(initial_state_path).split('_ex')[1].split('.')[0]
+
+        output_file_name = f'Configuration_ex{example_num}.csv'
         output_file_path = os.path.join(output_dir, output_file_name)
 
         print(f"Processing input files: {os.path.basename(initial_state_path)} and {os.path.basename(container_path)}")
@@ -471,8 +442,8 @@ def main():
         print(f"Saving output to: {output_file_path}")
         output.to_csv(output_file_path, index=False)
 
-        image_output_path = os.path.join(visual_dir, f'Configuration_{i + 1}.png')
+        image_output_path = os.path.join(visual_dir, f'Configuration_{example_num}.png')
         save_stacks_image(initial_stacks, image_output_path)
 
-#모든 로직 실행
+# 모든 로직 실행
 main()
