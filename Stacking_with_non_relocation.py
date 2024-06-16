@@ -72,16 +72,17 @@ def create_dataframe_from_stacks(container_info):
     data = []
     for info in container_info.values():
         data.append({
-            'container index': info['idx'],
+            'idx': info['idx'],
             'weight': info['weight'],
             'score': info['new_value'],
-            'relocation': info['relocations'],
+            'reloc': info['relocations'],
             'loc_x': info['loc_x'],
             'loc_y': 0,
             'loc_z': info['loc_z'],
             'size(ft)': info['size'],
-            'sequence' : info['seq'],
-            'group' : info['group']
+            'seq' : info['seq'],
+            'group' : info['group'],
+            'emerg' : info['emergency']
         })
     return pd.DataFrame(data)
 
@@ -147,7 +148,7 @@ def load_and_transform_data(initial_state_path, container_path):
             'size' : size
         }
 
-    stacks = [[None] * 6 for _ in range(10)] # stacks 생성
+    stacks = [[None] * 5 for _ in range(6)] # stacks 생성
 
     for _, row in initial_state_df.iterrows():
         x = int(row['loc_x']) - 1
@@ -196,7 +197,7 @@ def generate_positions_diagonal_pattern(num_stacks, num_tiers):
 def get_ideal_positions(new_weights, stacks):
     weight_levels = calculate_weight_levels(new_weights) #무게레벨 계산
 
-    positions = generate_positions_diagonal_pattern(10, 6)
+    positions = generate_positions_diagonal_pattern(6, 5)
     occupied_stacks = {i for i, stack in enumerate(stacks) if any(tier is not None for tier in stack)}
     available_positions = [pos for pos in positions if pos[0] not in occupied_stacks]
 
@@ -391,12 +392,12 @@ def container_placement_process(initial_stacks, new_weights, original_weights_ma
     print("-------------------------------------------------------------------")
 
     for i, new_weight in enumerate(new_weights):
-        actual_weight = original_weights_mapping[new_weight]
-        print(f"\nStep {i + 1}: Placing new value {new_weight} (actual weight: {actual_weight})")
+        # actual_weight = original_weights_mapping[new_weight]
+        print(f"\nStep {i + 1}: Placing new value {new_weight}")
 
         ideal_positions = weight_to_positions[new_weight]
         if place_container(initial_stacks, new_weight, ideal_positions, container_info):
-            print(f"Placed new value {new_weight} (actual weight: {actual_weight}) in ideal position")
+            print(f"Placed new value {new_weight}")
         else:
             final_relocation_single(initial_stacks, new_weight, container_info)
 
@@ -405,10 +406,42 @@ def container_placement_process(initial_stacks, new_weights, original_weights_ma
     return total_relocations
 
 #input 데이터를 통해 컨테이너 stacking 후 output 데이터로 저장
+# def main():
+#     input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\CLT_Data\\Input_Data\\Initial_5\\New_45'
+#     output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\CLT_Data\\Output_Data\\Heuristic_1\\Initial_5\\New_45'
+#     visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\CLT_Data\\Output_Data\\Heuristic_1\\Initial_5\\New_45'
+
+#     initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
+#     container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
+
+#     if len(initial_files) != len(container_files):
+#         print("Error: Mismatched number of initial state and container files.")
+#         return
+
+#     for i in range(len(initial_files)):
+#         initial_state_path = initial_files[i]
+#         container_path = container_files[i]
+#         output_file_name = f'Configuration_ex{i + 1}.csv'
+#         output_file_path = os.path.join(output_dir, output_file_name)
+
+#         print(f"Processing input files: {os.path.basename(initial_state_path)} and {os.path.basename(container_path)}")
+
+#         initial_stacks, new_weights, container_info = load_and_transform_data(initial_state_path, container_path)
+
+#         total_relocations = container_placement_process(initial_stacks, new_weights, {new_weight: weight for new_weight, weight in zip(new_weights, pd.read_csv(container_path)['weight'].tolist())}, container_info)
+#         output = create_dataframe_from_stacks(container_info)
+
+#         print(output)
+#         output.to_csv(output_file_path, index=False)
+
+#         image_output_path = os.path.join(visual_dir, f'Configuration_{i + 1}.png')
+#         save_stacks_image(initial_stacks, image_output_path)
+# #모든 로직 실행 dd
+# main()
 def main():
-    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\CLT_Data\\Input_Data\\Initial_0\\New_50'
-    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\CLT_Data\\Output_Data\\Heuristic_1\\Initial_0\\New_50'
-    visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\CLT_Data\\Output_Data\\Heuristic_1\\Initial_0\\New_50'
+    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Input_Data_25\\Initial_5\\New_20'
+    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Output_Data\\Heuristic_1\\Initial_5\\New_20'
+    visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Output_Data\\Heuristic_1\\Initial_5\\New_20'
 
     initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
     container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
@@ -423,15 +456,23 @@ def main():
         output_file_name = f'Configuration_ex{i + 1}.csv'
         output_file_path = os.path.join(output_dir, output_file_name)
 
+        print(f"Processing input files: {os.path.basename(initial_state_path)} and {os.path.basename(container_path)}")
+
         initial_stacks, new_weights, container_info = load_and_transform_data(initial_state_path, container_path)
+
+        print("Initial stacks before any new weights are added:")
+        print_stacks(initial_stacks)
+        print("-------------------------------------------------------------------")
 
         total_relocations = container_placement_process(initial_stacks, new_weights, {new_weight: weight for new_weight, weight in zip(new_weights, pd.read_csv(container_path)['weight'].tolist())}, container_info)
         output = create_dataframe_from_stacks(container_info)
 
         print(output)
+        print(f"Saving output to: {output_file_path}")
         output.to_csv(output_file_path, index=False)
 
         image_output_path = os.path.join(visual_dir, f'Configuration_{i + 1}.png')
         save_stacks_image(initial_stacks, image_output_path)
-#모든 로직 실행 dd
+
+#모든 로직 실행
 main()
