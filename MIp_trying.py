@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import glob
+import time
 
 def calculate_score(weight, g):
     scores = []
@@ -90,7 +91,8 @@ def solve_model(initial_data, new_data, result_file_path, solution_file_path, pl
 
     # Compute scores and levels
     first_score = calculate_score(weight, group)
-    w_prime = calculate_final_score(first_score, emergency)
+    # w_prime = calculate_final_score(first_score, emergency)
+    w_prime = weight
     levels = calculate_weight_levels(w_prime)
     ideal_position = get_ideal_positions(w_prime)
     geometric_center = geometric_best(ideal_position)
@@ -143,6 +145,13 @@ def solve_model(initial_data, new_data, result_file_path, solution_file_path, pl
         model.add_constraint(sum(x[i, j, k] for k in range(h) for i in range(total_n)) - sum(x[i, j+1, k] for k in range(h) for i in range(total_n)) <= peak_limit)
         model.add_constraint(sum(x[i, j, k] for k in range(h) for i in range(total_n)) - sum(x[i, j+1, k] for k in range(h) for i in range(total_n)) >= -peak_limit)
 
+
+    for j in range(m):
+        for k in range(h-1):
+            for _k in range(k+1, h):
+                model.add_constraint(sum(sequence[i] * x[i, j, k] for i in range(total_n)) <= M * (1 - sum(x[i, j, _k] for i in range(total_n))) + sum(sequence[i] * x[i, j, _k] for i in range(total_n)))
+
+
     # Constraint 7 : define r_jk
     for j in range(m):
         for k in range(h-1):
@@ -157,11 +166,6 @@ def solve_model(initial_data, new_data, result_file_path, solution_file_path, pl
     for j in range(m):
         for k in range(h-1):
             for _k in range(k+1, h):
-                model.add_constraint(sum(sequence[i] * x[i, j, k] for i in range(total_n)) <= M * (1 - sum(x[i, j, _k] for i in range(total_n))) + sum(sequence[i] * x[i, j, _k] for i in range(total_n)))
-
-    for j in range(m):
-        for k in range(h-1):
-            for _k in range(k+1, h):
                 model.add_constraint(sum(emergency[i] * x[i, j, k] for i in range(total_n)) <= M * (1 - sum(x[i, j, _k] for i in range(total_n))) + sum(emergency[i] * x[i, j, _k] for i in range(total_n)))
 
     # Objective function
@@ -169,13 +173,23 @@ def solve_model(initial_data, new_data, result_file_path, solution_file_path, pl
 
     model.print_information()
 
+    start_time = time.time()
+
     # Solve the model
     solution = model.solve()
+
+    end_time = time.time()
+
     model.print_solution()
+
+    # Calculate and print the elapsed time
+    elapsed_time = end_time - start_time
+    print('Time taken to solve the MIP model : ', elapsed_time, ' seconds\n')
 
     results = []
     if solution:
         with open(solution_file_path, 'w') as f:
+            f.write(f'run time : {elapsed_time}' )
             for i in range(total_n):
                 for j in range(m):
                     for k in range(h):
@@ -195,6 +209,7 @@ def solve_model(initial_data, new_data, result_file_path, solution_file_path, pl
                             ])
                             f.write(f'{x[i, j, k]} = {x[i, j, k].solution_value}, weight: {weight[i]}, w_prime: {w_prime[i]}, distance: {d[i].solution_value}\n')
                             f.write(f'{r[j, k]} = {r[j, k].solution_value}\n')
+                            
     else:
         print('No solution found')
         with open(solution_file_path, 'w') as f:
@@ -296,6 +311,11 @@ def load_data(initial_state_path, container_path):
     return initial_data, new_data
 
 def main():
+
+    # input_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Input_Data_25\\Initial_0\\New_25'
+    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\MIP_data\\input'
+    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\MIP_data\\output\\trying'
+
     
     initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
     container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
@@ -327,17 +347,5 @@ def main():
         visualize_solution(model, solution, x, weight, group, sequence, calculate_weight_levels(weight), geometric_center, plot_file_path)
 
 
-
-initial_con_num = 0
-new_con_num = 25
-total_con_num = initial_con_num + new_con_num
-
-input_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Input_Data_{total_con_num}\\Initial_{initial_con_num}\\New_{new_con_num}'
-output_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\MIP_data\\output\\Initial_{initial_con_num}\\New_{new_con_num}'
-
-# make folder
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-    print(f'Create ouput foler : {output_dir}\n')
 
 main()

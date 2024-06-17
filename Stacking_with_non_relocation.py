@@ -73,16 +73,14 @@ def create_dataframe_from_stacks(container_info):
     for info in container_info.values():
         data.append({
             'idx': info['idx'],
-            'weight': info['weight'],
-            'score': info['new_value'],
-            'reloc': info['relocations'],
             'loc_x': info['loc_x'],
             'loc_y': 0,
             'loc_z': info['loc_z'],
-            'size(ft)': info['size'],
+            'weight': info['weight'],
             'seq' : info['seq'],
-            'group' : info['group'],
-            'emerg' : info['emergency']
+            'emerg' : info['emergency'],
+            'reloc': info['relocations'],
+            'size(ft)': info['size']
         })
     return pd.DataFrame(data)
 
