@@ -1,8 +1,9 @@
 from docplex.mp.model import Model
-import numpy as np
+import pandas as pd
 import numpy as np
 import os
 import glob
+
 
 model = Model(name = 'IP model')
 
@@ -204,6 +205,9 @@ for j in range(m):
     for k in range(h-1):
         for _k in range(k+1, h):
             model.add_constraint(sum(e[i] * x[i,j,k] for i in range(n)) <= M * (1 - sum(x[i,j,_k]for i in range(n))) + sum(e[i] + x[i,j,_k]for i in range(n)))
+
+# Initial Container location setting
+
 
 
 #Objective function
