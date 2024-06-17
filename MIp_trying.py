@@ -154,7 +154,7 @@ def solve_model(initial_data, new_data, result_file_path, solution_file_path, pl
 
     # Constraint 7 : define r_jk
     for j in range(m):
-        for k in range(h-1):
+        for k in range(h):
             for _k in range(k+1, h):
                 model.add_constraint((sum(w_prime[i] * x[i, j, k] for i in range(total_n)) - sum(w_prime[i] * x[i, j, _k] for i in range(total_n))) / M <= M * (1-sum(x[i, j, _k] for i in range(total_n))) + r[j, k])
                 model.add_constraint(r[j, k] <= M * (1-sum(x[i, j, _k] for i in range(total_n))) + r[j, _k])
