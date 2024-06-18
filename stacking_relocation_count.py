@@ -3,9 +3,9 @@ import os
 import pandas as pd
 
 def main():
-    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\experiment\\Output_Data_25\\Heuristic_1\\Initial_5\\New_20'
+    input_dir = 'C:\\Users\\user\\Downloads\\CLT_code-main\\CLT_code-main\\Initial_15,New_10'
 
-    input_files = sorted(glob.glob(os.path.join(input_dir, 'Configuration_ex*.csv')))
+    input_files = sorted(glob.glob(os.path.join(input_dir, 'Relocation_ex*.csv')))
     print(f'Found{len(input_files)} files')
 
     total_relocation = 0
@@ -17,7 +17,7 @@ def main():
 
         input_df = pd.read_csv(input_path)
 
-        relocation = input_df['reloc'].tolist()
+        relocation = input_df['relocation'].tolist()
 
         total_relocation += sum(relocation)
 

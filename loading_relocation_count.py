@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 def main():
-    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\MIP_data\\output\\trying'
+    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\experiment\\Output_Data_25\\MIP\\Output_Data_25(stack_6_tier_5)\\MIP\\Initial_0\\New_25\\alpha_0_beta_1'
     input_files = sorted(glob.glob(os.path.join(input_dir, 'Configuration_*.csv')))
 
     total_num = len(input_files)
