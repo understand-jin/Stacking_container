@@ -91,8 +91,7 @@ def solve_model(initial_data, new_data, result_file_path, solution_file_path, pl
 
     # Compute scores and levels
     first_score = calculate_score(weight, group)
-    # w_prime = calculate_final_score(first_score, emergency)
-    w_prime = weight
+    w_prime = calculate_final_score(first_score, emergency)
     levels = calculate_weight_levels(w_prime)
     ideal_position = get_ideal_positions(w_prime)
     geometric_center = geometric_best(ideal_position)
@@ -154,10 +153,10 @@ def solve_model(initial_data, new_data, result_file_path, solution_file_path, pl
 
     # Constraint 7 : define r_jk
     for j in range(m):
-        for k in range(h):
+        for k in range(h-1):
             for _k in range(k+1, h):
-                model.add_constraint((sum(w_prime[i] * x[i, j, k] for i in range(total_n)) - sum(w_prime[i] * x[i, j, _k] for i in range(total_n))) / M <= M * (1-sum(x[i, j, _k] for i in range(total_n))) + r[j, k])
-                model.add_constraint(r[j, k] <= M * (1-sum(x[i, j, _k] for i in range(total_n))) + r[j, _k])
+                model.add_constraint((sum(w_prime[i] * x[i, j, k] for i in range(initial_n, new_n)) - sum(w_prime[i] * x[i, j, _k] for i in range(initial_n, new_n))) / M <= M * (1-sum(x[i, j, _k] for i in range(initial_n, new_n))) + r[j, k])
+                model.add_constraint(r[j, k] <= M * (1-sum(x[i, j, _k] for i in range(initial_n, new_n))) + r[j, _k])
 
     for j in range(m):
         for k in range(h):
