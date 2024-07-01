@@ -42,14 +42,14 @@ def process_files(input_dir):
     return mean_relocation
 
 def main():
-    base_numbers = [25, 25, 25, 25, 25]  # 원하는 숫자로 변경
+    base_numbers = [23 for _ in range(5)]  # 원하는 숫자로 변경
     initial_values = [0, 5, 7, 10, 15]  # Initial 숫자 리스트
-    new_values = [25, 20, 18, 15, 10]  # New 숫자 리스트
+    new_values = [23, 18, 16, 13, 8]  # New 숫자 리스트
 
     mean_relocations = []
 
     for base_number, initial, new in zip(base_numbers, initial_values, new_values):
-        input_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Output_Data_{base_number}(stack_6_tier_5)\\Heuristic_1\\Initial_{initial}\\New_{new}'
+        input_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\removing_ideal\\Output_Data_{base_number}(stack_6_tier_5)\\Heuristic_1\\Initial_{initial}\\New_{new}'
         
         mean_relocation = process_files(input_dir)
         
