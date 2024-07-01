@@ -3,8 +3,8 @@ import os
 import pandas as pd
 
 def main():
-    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\experiment\\Output_Data_25\\Heuristic_2\\Initial_15,New_10'
-    input_files = sorted(glob.glob(os.path.join(input_dir, 'Relocation_ex*.csv')))
+    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Output_Data_23(stack_6_tier_5)\\Heuristic_1\\Initial_10\\New_13'
+    input_files = sorted(glob.glob(os.path.join(input_dir, 'Configuration_ex*.csv')))
 
     total_num = len(input_files)
     total_relocation = 0

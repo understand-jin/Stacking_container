@@ -382,7 +382,7 @@ def is_peak_stack(stacks, stack_num, tier_num):
     # 임시로 쌓은 컨테이너 제거
     stacks[stack_num][tier_num] = None
 
-    if abs(temp_height - left_stack_height) >= 3 and abs(temp_height - right_stack_height) >= 3:
+    if temp_height - left_stack_height >= 3 and temp_height - right_stack_height >= 3:
         return True
     return False
 
@@ -423,45 +423,108 @@ def container_placement_process(initial_stacks, new_weights, original_weights_ma
 
     return total_relocations
 
+# def main():
+#     input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\CLT_Data-main\\Input_Data_23(stack_6_tier_5)\\Initial_10\\New_13'
+#     output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Output_Data_23(stack_6_tier_5)\\Heuristic_1\\Initial_10\\New_13'
+#     visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Output_Data_23(stack_6_tier_5)\\Heuristic_1\\Initial_10\\New_13'
+
+#     initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
+#     container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
+
+#     if len(initial_files) != len(container_files):
+#         print("Error: Mismatched number of initial state and container files.")
+#         return
+
+#     for i in range(len(initial_files)):
+#         initial_state_path = initial_files[i]
+#         container_path = container_files[i]
+        
+#         # Extract the example number from the initial state file name
+#         example_num = os.path.basename(initial_state_path).split('_ex')[1].split('.')[0]
+
+#         output_file_name = f'Configuration_ex{example_num}.csv'
+#         output_file_path = os.path.join(output_dir, output_file_name)
+
+#         print(f"Processing input files: {os.path.basename(initial_state_path)} and {os.path.basename(container_path)}")
+
+#         initial_stacks, new_weights, container_info = load_and_transform_data(initial_state_path, container_path)
+
+#         print("Initial stacks before any new weights are added:")
+#         print_stacks(initial_stacks)
+#         print("-------------------------------------------------------------------")
+
+#         total_relocations = container_placement_process(initial_stacks, new_weights, {new_weight: weight for new_weight, weight in zip(new_weights, pd.read_csv(container_path)['weight'].tolist())}, container_info)
+#         output = create_dataframe_from_stacks(container_info)
+
+#         print(output)
+#         print(f"Saving output to: {output_file_path}")
+#         output.to_csv(output_file_path, index=False)
+
+#         image_output_path = os.path.join(visual_dir, f'Configuration_{example_num}.png')
+#         save_stacks_image(initial_stacks, image_output_path)
+
+# # 모든 로직 실행
+# main()
+
+
 def main():
-    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\CLT_Data-main\\Input_Data_27(stack_6_tier_5)\\Initial_15\\New_12'
-    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Output_Data_27(stack_6_tier_5)\\Heuristic_1\\Initial_15\\New_12'
-    visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Output_Data_27(stack_6_tier_5)\\Heuristic_1\\Initial_15\\New_12'
+    # 사용자가 지정하는 숫자 변수
+    user_defined_number = 27  
+    initial_numbers = [0, 5, 7, 10, 15]  
+    new_numbers = [27, 22, 20, 17, 12]  
 
-    initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
-    container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
+    input_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\CLT_Data-main\\Input_Data_{user_defined_number}(stack_6_tier_5)'
+    output_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Output_Data_{user_defined_number}(stack_6_tier_5)'
+    visual_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Output_Data_{user_defined_number}(stack_6_tier_5)'
 
-    if len(initial_files) != len(container_files):
-        print("Error: Mismatched number of initial state and container files.")
+    if len(initial_numbers) != len(new_numbers):
+        print("Error: The lengths of initial_numbers and new_numbers lists do not match.")
         return
 
-    for i in range(len(initial_files)):
-        initial_state_path = initial_files[i]
-        container_path = container_files[i]
-        
-        # Extract the example number from the initial state file name
-        example_num = os.path.basename(initial_state_path).split('_ex')[1].split('.')[0]
+    for i in range(len(initial_numbers)):
+        initial_num = initial_numbers[i]
+        new_num = new_numbers[i]
 
-        output_file_name = f'Configuration_ex{example_num}.csv'
-        output_file_path = os.path.join(output_dir, output_file_name)
+        input_dir = os.path.join(input_base_dir, f'Initial_{initial_num}', f'New_{new_num}')
+        output_dir = os.path.join(output_base_dir, 'Heuristic_1', f'Initial_{initial_num}', f'New_{new_num}')
+        visual_dir = os.path.join(visual_base_dir, 'Heuristic_1', f'Initial_{initial_num}', f'New_{new_num}')
 
-        print(f"Processing input files: {os.path.basename(initial_state_path)} and {os.path.basename(container_path)}")
+        initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
+        container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
 
-        initial_stacks, new_weights, container_info = load_and_transform_data(initial_state_path, container_path)
+        if len(initial_files) != len(container_files):
+            print(f"Error: Mismatched number of initial state and container files for configuration Initial_{initial_num} - New_{new_num}.")
+            continue
 
-        print("Initial stacks before any new weights are added:")
-        print_stacks(initial_stacks)
-        print("-------------------------------------------------------------------")
+        for j in range(len(initial_files)):
+            initial_state_path = initial_files[j]
+            container_path = container_files[j]
 
-        total_relocations = container_placement_process(initial_stacks, new_weights, {new_weight: weight for new_weight, weight in zip(new_weights, pd.read_csv(container_path)['weight'].tolist())}, container_info)
-        output = create_dataframe_from_stacks(container_info)
+            # Extract the example number from the initial state file name
+            example_num = os.path.basename(initial_state_path).split('_ex')[1].split('.')[0]
 
-        print(output)
-        print(f"Saving output to: {output_file_path}")
-        output.to_csv(output_file_path, index=False)
+            output_file_name = f'Configuration_ex{example_num}.csv'
+            output_file_path = os.path.join(output_dir, output_file_name)
 
-        image_output_path = os.path.join(visual_dir, f'Configuration_{example_num}.png')
-        save_stacks_image(initial_stacks, image_output_path)
+            print(f"Processing input files: {os.path.basename(initial_state_path)} and {os.path.basename(container_path)}")
+
+            initial_stacks, new_weights, container_info = load_and_transform_data(initial_state_path, container_path)
+
+            print("Initial stacks before any new weights are added:")
+            print_stacks(initial_stacks)
+            print("-------------------------------------------------------------------")
+
+            total_relocations = container_placement_process(initial_stacks, new_weights, {new_weight: weight for new_weight, weight in zip(new_weights, pd.read_csv(container_path)['weight'].tolist())}, container_info)
+            output = create_dataframe_from_stacks(container_info)
+
+            print(output)
+            print(f"Saving output to: {output_file_path}")
+            output.to_csv(output_file_path, index=False)
+
+            image_output_path = os.path.join(visual_dir, f'Configuration_{example_num}.png')
+            save_stacks_image(initial_stacks, image_output_path)
 
 # 모든 로직 실행
 main()
+
+
