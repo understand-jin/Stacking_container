@@ -3,8 +3,8 @@ import os
 import pandas as pd
 
 def main():
-    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\experiment\\Output_Data_25\\MIP\\Output_Data_25(stack_6_tier_5)\\MIP\\Initial_0\\New_25\\alpha_0_beta_1'
-    input_files = sorted(glob.glob(os.path.join(input_dir, 'Configuration_*.csv')))
+    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\experiment\\Output_Data_25\\Heuristic_2\\Initial_15,New_10'
+    input_files = sorted(glob.glob(os.path.join(input_dir, 'Relocation_ex*.csv')))
 
     total_num = len(input_files)
     total_relocation = 0
@@ -12,6 +12,8 @@ def main():
     for input_path in input_files:
         input_df = pd.read_csv(input_path)
         input_df = input_df.sort_values(by=['loc_x', 'loc_z'])
+
+        print(f'input Path : {input_path}')
 
         stacks = {loc_x: [None] * 5 for loc_x in range(1,7)}
 

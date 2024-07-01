@@ -6,19 +6,6 @@ import os
 import glob
 import time
 
-def calculate_score(weight, g):
-    scores = []
-    for weight, g in zip(weight, g):
-        score = weight + g if g != 0 else weight
-        scores.append(score)
-    return scores
-
-def calculate_final_score(scores, e):
-    final_scores = []
-    score_max = max(scores)
-    for score, ee in zip(scores, e):
-        final_scores.append(score_max if ee != 0 else score)
-    return final_scores
 
 def calculate_weight_levels(w):
     levels = []  
@@ -48,8 +35,8 @@ def generate_positions_diagonal_pattern(num_stacks, num_tiers):
             y -= 1
     return positions
 
-def get_ideal_positions(w_prime):
-    weight_levels = calculate_weight_levels(w_prime)
+def get_ideal_positions(weight):
+    weight_levels = calculate_weight_levels(weight)
     positions = generate_positions_diagonal_pattern(6, 5)
     weight_positions = {level: [] for level in set(weight_levels)}
     pos_index = 0
@@ -85,48 +72,45 @@ def solve_model(initial_data, new_data, result_file_path, solution_file_path, pl
 
     # Weight of containers
     weight = initial_data['weight'] + new_data['weight']
-    group = initial_data['group'] + new_data['group']
     sequence = initial_data['seq'] + new_data['seq']
-    emergency = initial_data['emerg'] + new_data['emerg']
 
     # Compute scores and levels
-    first_score = calculate_score(weight, group)
-    w_prime = calculate_final_score(first_score, emergency)
-    levels = calculate_weight_levels(w_prime)
-    ideal_position = get_ideal_positions(w_prime)
+    levels = calculate_weight_levels(weight)
+    ideal_position = get_ideal_positions(weight)
     geometric_center = geometric_best(ideal_position)
     M = 1000
 
     # Decision Variables
-    x = model.binary_var_dict([(i, j, k) for i in range(total_n) for j in range(m) for k in range(h)], name='x')
-    r = model.binary_var_dict([(j, k) for j in range(m) for k in range(h)], name='r')
-    d = model.continuous_var_dict([i for i in range(total_n)], name='d')
-    d_x = model.continuous_var_dict([i for i in range(total_n)], name='d_x')
-    d_y = model.continuous_var_dict([i for i in range(total_n)], name='d_y')
+    x = model.binary_var_dict([(i,j,k) for i in range(total_n) for j in range(m) for k in range(h)], name = 'x')
+    r = model.binary_var_dict([(j,k) for j in range(m) for k in range(h)], name = 'r')
 
-    # Constraints for initial containers
-    for i in range(initial_n):
-        j = initial_data['loc_x'][i] - 1
-        k = initial_data['loc_z'][i]
-        model.add_constraint(x[i, j, k] == 1)
+    d = model.continuous_var_dict([i for i in range(total_n)], name = 'd')
+    d_x = model.continuous_var_dict([i for i in range(total_n)], name = 'd_x')
+    d_y = model.continuous_var_dict([i for i in range(total_n)], name = 'd_y')
+
+    # # Constraints for initial containers
+    # for i in range(initial_n):
+    #     j = initial_data['loc_x'][i] - 1
+    #     k = initial_data['loc_z'][i]
+    #     model.add_constraint(x[i, j, k] == 1)
 
     # Constraint1 : Container i muse be assigned to ecactly one stack and on tier
     for i in range(total_n):
-       model.add_constraint(sum(x[i,j,k] for j in range(m) for k in range(h)) == 1)
+        model.add_constraint(sum(x[i,j,k] for j in range(m) for k in range(h)) == 1)
 
     # Constraint 2 : one slot can only have one container
     for j in range(m):
-        for k in range(h):
-            model.add_constraint(sum(x[i, j, k] for i in range(total_n)) <= 1)
+        for k in range (h):
+            model.add_constraint(sum(x[i,j,k] for i in range(total_n)) <= 1)
 
-    # constraint 3 : the height of stack j must be less than or equal to h
+    # constraint 3 : the hight of stack j must be less than or equal to h
     for j in range(m):
-        model.add_constraint(sum(x[i, j, k] for k in range(h) for i in range(total_n)) <= h)
+        model.add_constraint(sum(x[i,j,k]for k in range(h) for i in range(total_n)) <= h)
 
     # constraint 4 : you can't stack a container on slot k if there is no container on slot k-1
     for j in range(m):
         for k in range(h-1):
-            model.add_constraint(sum(x[i, j, k] for i in range(total_n)) >= sum(x[i, j, k+1] for i in range(total_n)))
+            model.add_constraint(sum(x[i,j,k] for i in range(total_n)) >= sum(x[i,j,k+1] for i in range(total_n)))
 
     # constraint 5: define d_i
     for i in range(total_n):
@@ -141,34 +125,27 @@ def solve_model(initial_data, new_data, result_file_path, solution_file_path, pl
 
     # Constraint 6 : prevent peak stacks
     for j in range(m-1):
-        model.add_constraint(sum(x[i, j, k] for k in range(h) for i in range(total_n)) - sum(x[i, j+1, k] for k in range(h) for i in range(total_n)) <= peak_limit)
-        model.add_constraint(sum(x[i, j, k] for k in range(h) for i in range(total_n)) - sum(x[i, j+1, k] for k in range(h) for i in range(total_n)) >= -peak_limit)
-
-
-    for j in range(m):
-        for k in range(h-1):
-            for _k in range(k+1, h):
-                model.add_constraint(sum(sequence[i] * x[i, j, k] for i in range(total_n)) <= M * (1 - sum(x[i, j, _k] for i in range(total_n))) + sum(sequence[i] * x[i, j, _k] for i in range(total_n)))
-
+        model.add_constraint(sum(x[i,j,k]for k in range(h) for i in range(total_n)) - sum(x[i,j+1,k] for k in range(h) for i in range(total_n)) <= peak_limit)
+        model.add_constraint(sum(x[i,j,k]for k in range(h) for i in range(total_n)) - sum(x[i,j+1,k] for k in range(h) for i in range(total_n)) >= - peak_limit)
 
     # Constraint 7 : define r_jk
     for j in range(m):
         for k in range(h-1):
             for _k in range(k+1, h):
-                model.add_constraint((sum(w_prime[i] * x[i, j, k] for i in range(total_n)) - sum(w_prime[i] * x[i, j, _k] for i in range(total_n))) / M <= M * (1-sum(x[i, j, _k] for i in range(total_n))) + r[j, k])
-                model.add_constraint(r[j, k] <= M * (1-sum(x[i, j, _k] for i in range(total_n))) + r[j, _k])
-
-    # for j in range(m):
-    #     for k in range(h):
-    #         model.add_constraint(sum(x[i, j, k] for i in range(total_n)) >= r[j, k])
+                model.add_constraint((sum(weight[i]*x[i,j,k] for i in range(total_n))-sum(weight[i]*x[i,j,_k] for i in range(total_n)))/M <= M * (1-sum(x[i,j,_k] for i in range(total_n)))+ r[j,k])
+                model.add_constraint(r[j,k] <= M * (1-sum(x[i,j,_k]for i in range(total_n))) + r[j,_k])
+            
+    for j in range(m):
+        for k in range(h):
+            model.add_constraint(sum(x[i,j,k]for i in range(total_n)) >= r[j,k])
 
     for j in range(m):
-        for k in range(h-1):
-            for _k in range(k+1, h):
-                model.add_constraint(sum(emergency[i] * x[i, j, k] for i in range(total_n)) <= M * (1 - sum(x[i, j, _k] for i in range(total_n))) + sum(emergency[i] * x[i, j, _k] for i in range(total_n)))
+            for k in range(h-1):
+                for _k in range(k+1, h):
+                    model.add_constraint(sum(sequence[i] * x[i, j, k] for i in range(total_n)) <= M * (1 - sum(x[i, j, _k] for i in range(total_n))) + sum(sequence[i] * x[i, j, _k] for i in range(total_n)))
 
-    # Objective function
-    model.minimize((alpha * sum(r[j, k] for j in range(m) for k in range(h))) + (beta * sum(d[i] for i in range(total_n))))
+    #Objective function
+    model.minimize((alpha * sum(r[j,k] for j in range(m) for k in range(h))) + (beta * sum(d[i]for i in range(total_n))))
 
     model.print_information()
 
@@ -199,14 +176,11 @@ def solve_model(initial_data, new_data, result_file_path, solution_file_path, pl
                                 0,
                                 k,
                                 weight[i],
-                                group[i],
-                                w_prime[i],
                                 sequence[i],
-                                emergency[i],
                                 r[j, k].solution_value,
                                 20,
                             ])
-                            f.write(f'{x[i, j, k]} = {x[i, j, k].solution_value}, weight: {weight[i]}, w_prime: {w_prime[i]}, distance: {d[i].solution_value}\n')
+                            f.write(f'{x[i, j, k]} = {x[i, j, k].solution_value}, weight: {weight[i]}, w_prime: {weight[i]}, distance: {d[i].solution_value}\n')
                             f.write(f'{r[j, k]} = {r[j, k].solution_value}\n')
                             
     else:
@@ -216,7 +190,7 @@ def solve_model(initial_data, new_data, result_file_path, solution_file_path, pl
 
     # Convert results to DataFrame
     result_df = pd.DataFrame(results, columns=[
-        'idx', 'loc_x', 'loc_y', 'loc_z', 'weight', 'group', 'score', 'seq', 'emerg', 'reloc', 'size(ft)'
+        'idx', 'loc_x', 'loc_y', 'loc_z', 'weight', 'seq', 'reloc', 'size(ft)'
     ])
 
     # Save DataFrame to CSV
@@ -224,19 +198,18 @@ def solve_model(initial_data, new_data, result_file_path, solution_file_path, pl
     print(f'Results saved to {result_file_path}')
 
     # Save visualization
-    visualize_solution(model, solution, x, weight, group, sequence, calculate_weight_levels(weight), geometric_center, plot_file_path)
+    visualize_solution(model, solution, x, weight,  sequence, calculate_weight_levels(weight), geometric_center, plot_file_path)
 
     return model, solution, x, r, d, geometric_center
 
 
-def visualize_solution(model, solution, x, weight, group, sequence, levels, geometric_center, plot_file_path):
+def visualize_solution(model, solution, x, weight, sequence, levels, geometric_center, plot_file_path):
     n = len(weight)
     m = 6
     h = 5
     stacks = []  
     tiers = []   
     weights = [] 
-    priority = []
     level_list = []
 
     for i in range(n):
@@ -246,14 +219,13 @@ def visualize_solution(model, solution, x, weight, group, sequence, levels, geom
                     stacks.append(j)
                     tiers.append(k)
                     weights.append(weight[i])
-                    priority.append(group[i])
                     level_list.append(levels[i])
 
     plt.figure(figsize=(10, 6))
     plt.scatter(stacks, tiers, c='white', s=100)  
 
-    for label, x, y, p, v in zip(weights, stacks, tiers, priority, level_list):
-        plt.annotate(f'W {label} ({p, v})', (x, y), textcoords="offset points", xytext=(0, 30), ha='center')
+    for label, x, y, v in zip(weights, stacks, tiers, level_list):
+        plt.annotate(f'W {label} ({v})', (x, y), textcoords="offset points", xytext=(0, 30), ha='center')
 
     plt.grid(True)
     plt.xticks([i + 0.5 for i in range(m)], [f'Stack {i+1}' for i in range(m)])
@@ -274,8 +246,6 @@ def load_data(initial_state_path, container_path):
     
     # 필요한 열만 선택
     initial_weight = initial_df['weight'].tolist()
-    group = initial_df['group'].tolist()
-    emergency = initial_df['emerg'].tolist()
     seq = [0] * len(initial_weight)
     loc_x = initial_df['loc_x'].tolist()
     loc_z = initial_df['loc_z'].tolist()
@@ -284,9 +254,7 @@ def load_data(initial_state_path, container_path):
     # 초기 상태의 컨테이너 정보
     initial_data = {
         'weight': initial_weight,
-        'group': group,
         'seq': seq,
-        'emerg': emergency,
         'loc_x': loc_x,
         'loc_z': loc_z,
         'index': index
@@ -294,16 +262,12 @@ def load_data(initial_state_path, container_path):
     
     # 새로운 컨테이너 정보
     new_weight = container_df['weight'].tolist()
-    new_group = container_df['group'].tolist()
     new_sequence = container_df['seq'].tolist()
-    new_emergency = container_df['emerg'].tolist()
     new_index = container_df['idx'].tolist()
     
     new_data = {
         'weight': new_weight,
-        'group': new_group,
         'seq': new_sequence,
-        'emerg': new_emergency,
         'index': new_index
     }
     
@@ -313,7 +277,7 @@ def main():
 
     # input_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\experiment\\Input_Data_25\\Initial_0\\New_25'
     input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\MIP_data\\input'
-    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\MIP_data\\output\\trying'
+    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\MIP_data\\output\\trying2'
 
     
     initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
@@ -341,9 +305,8 @@ def main():
 
         # Visualization
         weight = initial_data['weight'] + new_data['weight']
-        group = initial_data['group'] + new_data['group']
         sequence = initial_data['seq'] + new_data['seq']
-        visualize_solution(model, solution, x, weight, group, sequence, calculate_weight_levels(weight), geometric_center, plot_file_path)
+        visualize_solution(model, solution, x, weight, sequence, calculate_weight_levels(weight), geometric_center, plot_file_path)
 
 
 

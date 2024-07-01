@@ -406,9 +406,9 @@ def container_placement_process(initial_stacks, new_weights, original_weights_ma
     return total_relocations
 
 def main():
-    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\experiment\\Input_Data_20\\Initial_15\\New_5'
-    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\experiment\\Output_Data_20\\Heuristic_1\\Initial_15\\New_5'
-    visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\experiment\\Output_Data_20\\Heuristic_1\\Initial_15\\New_5'
+    input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\RL Data'
+    output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\RL Data'
+    visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\RL Data'
 
     initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
     container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
