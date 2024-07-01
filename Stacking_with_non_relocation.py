@@ -223,14 +223,15 @@ def place_container(stacks, weight, positions, container_info):
     for position in positions:
         stack_num, tier_num = position
         if all(stacks[stack_num][i] is not None for i in range(tier_num)) and stacks[stack_num][tier_num] is None:
-            stacks[stack_num][tier_num] = weight
-            for idx, info in container_info.items():
-                if info['idx'] == idx and info['new_value'] == weight and info['loc_x'] is None:
-                    info['loc_x'] = stack_num + 1
-                    info['loc_z'] = tier_num
-                    print(f"Container index: {idx}, new_value: {info['new_value']}, loc_x: {info['loc_x']}, loc_z: {info['loc_z']}")
-                    placed = True
-                    break  # 내부 for 루프를 종료
+            if not is_peak_stack(stacks, stack_num, tier_num):
+                stacks[stack_num][tier_num] = weight
+                for idx, info in container_info.items():
+                    if info['idx'] == idx and info['new_value'] == weight and info['loc_x'] is None:
+                        info['loc_x'] = stack_num + 1
+                        info['loc_z'] = tier_num
+                        print(f"Container index: {idx}, new_value: {info['new_value']}, loc_x: {info['loc_x']}, loc_z: {info['loc_z']}")
+                        placed = True
+                        break  # 내부 for 루프를 종료
             if placed:
                 break  # 외부 for 루프를 종료
     return placed
@@ -250,7 +251,7 @@ def final_relocation_single(stacks, weight, container_info):
                     else:
                         difference = weight
 
-                    if difference >= 0 and difference < best_difference:
+                    if difference >= 0 and difference < best_difference and not is_peak_stack(stacks, stack_num, tier_num):
                         best_stack = stack_num
                         best_difference = difference
 
@@ -267,7 +268,7 @@ def final_relocation_single(stacks, weight, container_info):
                         else:
                             difference = weight
 
-                        if abs(difference) < abs(best_difference):
+                        if abs(difference) < abs(best_difference) and not is_peak_stack(stacks, stack_num, tier_num):
                             best_stack = stack_num
                             best_difference = difference
 
@@ -368,6 +369,23 @@ def get_empty_stacks(stacks):
         if all(tier is None for tier in stack):
             empty_stacks.append(stack_num)
     return empty_stacks
+
+# 피크스택 확인 함수
+def is_peak_stack(stacks, stack_num, tier_num):
+
+    stacks[stack_num][tier_num] = True 
+    temp_height = sum(1 for tier in stacks[stack_num] if tier is not None)
+
+    left_stack_height = sum(1 for tier in stacks[stack_num - 1] if tier is not None) if stack_num > 0 else 0
+    right_stack_height = sum(1 for tier in stacks[stack_num + 1] if tier is not None) if stack_num < len(stacks) - 1 else 0
+
+    # 임시로 쌓은 컨테이너 제거
+    stacks[stack_num][tier_num] = None
+
+    if abs(temp_height - left_stack_height) >= 3 and abs(temp_height - right_stack_height) >= 3:
+        return True
+    return False
+
 
 #컨테이너 배치 과정 총 로직
 def container_placement_process(initial_stacks, new_weights, original_weights_mapping, container_info):
