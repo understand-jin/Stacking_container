@@ -474,8 +474,8 @@ def main():
     new_numbers = [27, 22, 20, 17, 12]  
 
     input_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\CLT_Data-main\\Input_Data_{user_defined_number}(stack_6_tier_5)'
-    output_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Output_Data_{user_defined_number}(stack_6_tier_5)'
-    visual_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Output_Data_{user_defined_number}(stack_6_tier_5)'
+    output_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\removing_ideal\\Output_Data_{user_defined_number}(stack_6_tier_5)'
+    visual_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\removing_ideal\\Output_Data_{user_defined_number}(stack_6_tier_5)'
 
     if len(initial_numbers) != len(new_numbers):
         print("Error: The lengths of initial_numbers and new_numbers lists do not match.")
