@@ -315,13 +315,13 @@ def container_placement_process(initial_stacks, new_weights, container_info):
 
 def main():
     # 사용자가 지정하는 숫자 변수
-    user_defined_number = 27  
-    initial_numbers = [0, 5, 7, 10, 15]  
-    new_numbers = [27, 22, 20, 17, 12]  
+    user_defined_number = 23  
+    initial_numbers = [3]  
+    new_numbers = [20]  
 
-    input_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\CLT_Data\\Ungrouped\\Input_Data_{user_defined_number}(stack_6_tier_5)'
-    output_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\removing_ideal\\Output_Data_{user_defined_number}(stack_6_tier_5)'
-    visual_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\removing_ideal\\Output_Data_{user_defined_number}(stack_6_tier_5)'
+    input_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\CLT_Data\\Grouped\\Input_Data_{user_defined_number}(stack_6_tier_5)'
+    output_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Grouped\\Output_Data_{user_defined_number}(stack_6_tier_5)'
+    visual_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Grouped\\Output_Data_{user_defined_number}(stack_6_tier_5)'
 
     if len(initial_numbers) != len(new_numbers):
         print("Error: The lengths of initial_numbers and new_numbers lists do not match.")
