@@ -38,33 +38,24 @@ def calculate_score(weight, group):
         for w, g in zip(weight, group):
             if g == 0:
                 score = w
-            elif g == 100:
-                score = w + g
+            elif g == 1:
+                score = w + 100
+            elif g ==2:
+                score = w + 200
             else:
-                score = w + g
+                score = w + 300
             scores.append(score)
         return scores
     else:
         if group == 0:
             return weight
-        elif group == 100:
-            return weight + group
+        elif group == 1:
+            return weight + 100
+        elif group == 2:
+            return weight + 200
         else:
-            return weight + group
+            return weight + 300
 
-#emergency 값 할당
-def final_score(scores, emergency):
-    if isinstance(scores, list):
-        w_max = max(scores)
-        final_scores = []
-        for score in scores:
-            if emergency == 1:
-                final_scores.append(w_max)
-            else:
-                final_scores.append(score)
-        return final_scores
-    else:
-        return w_max if emergency == 1 else scores
 
         
 #output 데이터 프레임 생성
@@ -78,9 +69,10 @@ def create_dataframe_from_stacks(container_info):
             'loc_z': info['loc_z'],
             'weight': info['weight'],
             'seq' : info['seq'],
-            'emerg' : info['emergency'],
             'reloc': info['relocations'],
-            'size(ft)': info['size']
+            'size(ft)': info['size'],
+            'group' : info['group'],
+            'score' : info['score']
         })
     return pd.DataFrame(data)
 
@@ -95,8 +87,7 @@ def load_and_transform_data(initial_state_path, container_path):
     new_weight = container_df['weight'].tolist()
     group1 = container_df['group'].tolist()
     score1 = calculate_score(new_weight, group1)
-    emergency1 = container_df['emerg'].tolist()
-    new_weights = final_score(score1, emergency1)
+    new_weights = score1
     
 
     container_info = {}
@@ -107,22 +98,20 @@ def load_and_transform_data(initial_state_path, container_path):
         loc_y = 0
         loc_z = int(row['loc_z'])
         group = int(row['group'])
-        emergency = int(row['emerg'])
         size = int(row['size(ft)'])
         score = calculate_score(weight, group)
-        new_value = final_score(score, emergency)
+        new_value = score
 
         container_info[idx] = {
             'idx': idx,
             'weight': weight,
-            'new_value': new_value,
+            'score': score,
             'relocations': 0,
             'loc_x': loc_x,
             'loc_y': loc_y,
             'loc_z': loc_z,
             'seq' : 0,
             'group' : group,
-            'emergency' : emergency,
             'size' : size
         }
 
@@ -131,22 +120,20 @@ def load_and_transform_data(initial_state_path, container_path):
         weight = row['weight']
         seq = int(row['seq'])
         group = int(row['group'])
-        emergency = int(row['emerg'])
         size = int(row['size(ft)'])
         score = calculate_score(weight, group)
-        new_value = final_score(score, emergency)
+        new_value = score
 
         container_info[idx] = {
             'idx': idx,
             'weight': weight,
-            'new_value': new_value,
+            'score': score,
             'relocations': 0,
             'loc_x': None,
             'loc_y': None,
             'loc_z': None,
             'seq' : seq,
             'group' : group,
-            'emergency' : emergency,
             'size' : size
         }
 
@@ -156,85 +143,9 @@ def load_and_transform_data(initial_state_path, container_path):
         x = int(row['loc_x']) - 1
         z = int(row['loc_z'])
         idx = int(row['idx'])
-        stacks[x][z] = container_info[idx]['new_value']
+        stacks[x][z] = container_info[idx]['score']
 
     return stacks, new_weights, container_info
-
-#이상적인 형상을 위한 무게레벨 설정(무게 레벌은 1~9)
-def calculate_weight_levels(weights):
-    levels = []
-    interval = 8
-    w_min = min(weights)
-    w_max = max(weights)
-    
-    for w_c in weights:
-        level = ((w_c - w_min) / (w_max - w_min) * interval) + 1
-        levels.append(int(level))  
-    
-    return levels
-
-def generate_positions_diagonal_pattern(num_stacks, num_tiers):
-    positions = []
-
-    for start in range(num_tiers):
-        x, y = 0, start
-        while y >= 0 and x < num_stacks:
-            positions.append((x, y))
-            x += 1
-            y -= 1
-
-    for start in range(1, num_stacks):
-        x, y = start, num_tiers - 1
-        while x < num_stacks and y >= 0:
-            positions.append((x, y))
-            x += 1
-            y -= 1
-
-    return positions
-
-
-#이상적인 형상의 이상적인 좌표설정
-def get_ideal_positions(new_weights, stacks):
-    weight_levels = calculate_weight_levels(new_weights) #무게레벨 계산
-
-    positions = generate_positions_diagonal_pattern(6, 5)
-    occupied_stacks = {i for i, stack in enumerate(stacks) if any(tier is not None for tier in stack)}
-    available_positions = [pos for pos in positions if pos[0] not in occupied_stacks]
-
-    weight_positions = {level: [] for level in set(weight_levels)}
-
-    pos_index = 0
-    for level in sorted(set(weight_levels)):
-        positions_needed = weight_levels.count(level)
-        for _ in range(positions_needed):
-            if pos_index < len(available_positions):
-                weight_positions[level].append(available_positions[pos_index])
-                pos_index += 1
-            else:
-                break
-
-    weight_to_positions = {weight: weight_positions[level] for weight, level in zip(new_weights, weight_levels)}
-
-    return weight_to_positions, weight_positions
-
-#이상적인 좌표에 스택킹 가능하면 이상적인 좌표에 우선적으로 스택킹
-def place_container(stacks, weight, positions, container_info):
-    placed = False
-    for position in positions:
-        stack_num, tier_num = position
-        if all(stacks[stack_num][i] is not None for i in range(tier_num)) and stacks[stack_num][tier_num] is None:
-            if not is_peak_stack(stacks, stack_num, tier_num):
-                stacks[stack_num][tier_num] = weight
-                for idx, info in container_info.items():
-                    if info['idx'] == idx and info['new_value'] == weight and info['loc_x'] is None:
-                        info['loc_x'] = stack_num + 1
-                        info['loc_z'] = tier_num
-                        print(f"Container index: {idx}, new_value: {info['new_value']}, loc_x: {info['loc_x']}, loc_z: {info['loc_z']}")
-                        placed = True
-                        break  # 내부 for 루프를 종료
-            if placed:
-                break  # 외부 for 루프를 종료
-    return placed
 
 #무게 차이를 고려한 stacking
 def final_relocation_single(stacks, weight, container_info):
@@ -276,10 +187,10 @@ def final_relocation_single(stacks, weight, container_info):
         if stacks[best_stack][tier_num] is None:
             stacks[best_stack][tier_num] = weight
             for idx, info in container_info.items():
-                if info['idx'] == idx and info['new_value'] == weight and info['loc_x'] is None:
+                if info['idx'] == idx and info['score'] == weight and info['loc_x'] is None:
                     info['loc_x'] = best_stack + 1
                     info['loc_z'] = tier_num
-                    print(f"Container index: {idx}, new_value: {info['new_value']}, loc_x: {info['loc_x']}, loc_z: {info['loc_z']}")
+                    print(f"Container index: {idx}, score: {info['score']}, loc_x: {info['loc_x']}, loc_z: {info['loc_z']}")
                     break
             print(f"Placed weight {weight} in Stack {best_stack + 1}, Tier {tier_num + 1}")
             break
@@ -344,7 +255,7 @@ def relocate_top_containers(stacks, container_info):
 
                         # Update container_info for the relocated container
                         for info in container_info.values():
-                            if info['new_value'] == weight and info['loc_x'] == stack_num + 1 and info['loc_z'] == tier:
+                            if info['score'] == weight and info['loc_x'] == stack_num + 1 and info['loc_z'] == tier:
                                 info['relocations'] += 1
                                 info['loc_x'] = best_stack + 1
                                 info['loc_z'] = target_tier
@@ -361,14 +272,6 @@ def relocate_top_containers(stacks, container_info):
 
     print(f"Total relocations: {relocation_count}")
     return relocation_count
-
-#비어 있는 stack 확인
-def get_empty_stacks(stacks):
-    empty_stacks = []
-    for stack_num, stack in enumerate(stacks):
-        if all(tier is None for tier in stack):
-            empty_stacks.append(stack_num)
-    return empty_stacks
 
 # 피크스택 확인 함수
 def is_peak_stack(stacks, stack_num, tier_num):
@@ -388,7 +291,7 @@ def is_peak_stack(stacks, stack_num, tier_num):
 
 
 #컨테이너 배치 과정 총 로직
-def container_placement_process(initial_stacks, new_weights, original_weights_mapping, container_info):
+def container_placement_process(initial_stacks, new_weights, container_info):
     print("Initial stacks before any new weights are added:")
     print_stacks(initial_stacks)
     print("-------------------------------------------------------------------")
@@ -398,84 +301,27 @@ def container_placement_process(initial_stacks, new_weights, original_weights_ma
     print_stacks(initial_stacks)
     print("-------------------------------------------------------------------")
 
-    # empty_stacks = get_empty_stacks(initial_stacks)
-    # print(f"Empty stacks after relocation: {empty_stacks}")
-
-    # weight_to_positions, level_positions = get_ideal_positions(new_weights, initial_stacks)
-
-    # print("Ideal candidate location for new weights")
-    # print_level_positions(level_positions)
-    # print("-------------------------------------------------------------------")
-    # print_weight_positions(weight_to_positions)
-    # print("-------------------------------------------------------------------")
 
     for i, new_weight in enumerate(new_weights):
-        # actual_weight = original_weights_mapping[new_weight]
         print(f"\nStep {i + 1}: Placing new value {new_weight}")
 
-        # ideal_positions = weight_to_positions[new_weight]
-        # if place_container(initial_stacks, new_weight, ideal_positions, container_info):
-        #     print(f"Placed new value {new_weight}")
-        # else:
         final_relocation_single(initial_stacks, new_weight, container_info)
 
         print_stacks(initial_stacks)
 
     return total_relocations
 
-# def main():
-#     input_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\CLT_Data-main\\Input_Data_23(stack_6_tier_5)\\Initial_10\\New_13'
-#     output_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Output_Data_23(stack_6_tier_5)\\Heuristic_1\\Initial_10\\New_13'
-#     visual_dir = 'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Output_Data_23(stack_6_tier_5)\\Heuristic_1\\Initial_10\\New_13'
-
-#     initial_files = sorted(glob.glob(os.path.join(input_dir, 'Initial_state_ex*.csv')))
-#     container_files = sorted(glob.glob(os.path.join(input_dir, 'Container_ex*.csv')))
-
-#     if len(initial_files) != len(container_files):
-#         print("Error: Mismatched number of initial state and container files.")
-#         return
-
-#     for i in range(len(initial_files)):
-#         initial_state_path = initial_files[i]
-#         container_path = container_files[i]
-        
-#         # Extract the example number from the initial state file name
-#         example_num = os.path.basename(initial_state_path).split('_ex')[1].split('.')[0]
-
-#         output_file_name = f'Configuration_ex{example_num}.csv'
-#         output_file_path = os.path.join(output_dir, output_file_name)
-
-#         print(f"Processing input files: {os.path.basename(initial_state_path)} and {os.path.basename(container_path)}")
-
-#         initial_stacks, new_weights, container_info = load_and_transform_data(initial_state_path, container_path)
-
-#         print("Initial stacks before any new weights are added:")
-#         print_stacks(initial_stacks)
-#         print("-------------------------------------------------------------------")
-
-#         total_relocations = container_placement_process(initial_stacks, new_weights, {new_weight: weight for new_weight, weight in zip(new_weights, pd.read_csv(container_path)['weight'].tolist())}, container_info)
-#         output = create_dataframe_from_stacks(container_info)
-
-#         print(output)
-#         print(f"Saving output to: {output_file_path}")
-#         output.to_csv(output_file_path, index=False)
-
-#         image_output_path = os.path.join(visual_dir, f'Configuration_{example_num}.png')
-#         save_stacks_image(initial_stacks, image_output_path)
-
-# # 모든 로직 실행
-# main()
 
 
 def main():
     # 사용자가 지정하는 숫자 변수
-    user_defined_number = 27  
-    initial_numbers = [0, 5, 7, 10, 15]  
-    new_numbers = [27, 22, 20, 17, 12]  
+    user_defined_number = 5  
+    initial_numbers = [0, 2, 3]  
+    new_numbers = [5, 3, 2]  
 
-    input_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\CLT_Data-main\\Input_Data_{user_defined_number}(stack_6_tier_5)'
-    output_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\removing_ideal\\Output_Data_{user_defined_number}(stack_6_tier_5)'
-    visual_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\removing_ideal\\Output_Data_{user_defined_number}(stack_6_tier_5)'
+    input_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\CLT_Data\\Grouped\\Input_Data_{user_defined_number}(stack_6_tier_5)'
+    output_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Grouped\\Output_Data_{user_defined_number}(stack_6_tier_5)'
+    visual_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Grouped\\Output_Data_{user_defined_number}(stack_6_tier_5)'
 
     if len(initial_numbers) != len(new_numbers):
         print("Error: The lengths of initial_numbers and new_numbers lists do not match.")
@@ -514,7 +360,7 @@ def main():
             print_stacks(initial_stacks)
             print("-------------------------------------------------------------------")
 
-            total_relocations = container_placement_process(initial_stacks, new_weights, {new_weight: weight for new_weight, weight in zip(new_weights, pd.read_csv(container_path)['weight'].tolist())}, container_info)
+            total_relocations = container_placement_process(initial_stacks, new_weights, container_info)
             output = create_dataframe_from_stacks(container_info)
 
             print(output)
