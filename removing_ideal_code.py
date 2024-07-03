@@ -319,9 +319,9 @@ def main():
     initial_numbers = [3]  
     new_numbers = [20]  
 
-    input_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\CLT_Data\\Grouped\\Input_Data_{user_defined_number}(stack_6_tier_5)'
-    output_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Grouped\\Output_Data_{user_defined_number}(stack_6_tier_5)'
-    visual_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Grouped\\Output_Data_{user_defined_number}(stack_6_tier_5)'
+    input_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\CLT_Data-main\\Ungrouped\\Input_Data_{user_defined_number}(stack_6_tier_5)'
+    output_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\removing_ideal\\Output_Data_{user_defined_number}(stack_6_tier_5)'
+    visual_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\removing_ideal\\Output_Data_{user_defined_number}(stack_6_tier_5)'
 
     if len(initial_numbers) != len(new_numbers):
         print("Error: The lengths of initial_numbers and new_numbers lists do not match.")
