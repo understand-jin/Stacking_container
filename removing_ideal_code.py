@@ -315,9 +315,9 @@ def container_placement_process(initial_stacks, new_weights, container_info):
 
 def main():
     # 사용자가 지정하는 숫자 변수
-    user_defined_number = 5  
-    initial_numbers = [0, 2, 3]  
-    new_numbers = [5, 3, 2]  
+    user_defined_number = 27  
+    initial_numbers = [0, 5, 7, 10, 15]  
+    new_numbers = [27, 22, 20, 17, 12]  
 
     input_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\CLT_Data\\Grouped\\Input_Data_{user_defined_number}(stack_6_tier_5)'
     output_base_dir = f'C:\\Users\\user\\OneDrive\\바탕 화면\\stacking_non_relocation\\Stacking_container\\Grouped\\Output_Data_{user_defined_number}(stack_6_tier_5)'
